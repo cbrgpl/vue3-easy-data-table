@@ -80,15 +80,20 @@
                 >
                   {{ header.text }}
                 </span>
-                  <slot v-if="header.sortable" :key="header.sortType ? header.sortType : 'none'" name="sortIcon" :sortType="header.sortType">
-                    <i
-                      v-if="header.sortable"
-                      :key="header.sortType ? header.sortType : 'none'"
-                      class="sortType-icon"
-                      :class="{'desc': header.sortType === 'desc'}"
-                    ></i>
-                  </slot>
-               
+                <slot
+                  v-if="header.sortable"
+                  :key="header.sortType ? header.sortType : 'none'"
+                  name="sortIcon"
+                  :sort-type="header.sortType"
+                >
+                  <i
+                    v-if="header.sortable"
+                    :key="header.sortType ? header.sortType : 'none'"
+                    class="sortType-icon"
+                    :class="{'desc': header.sortType === 'desc'}"
+                  ></i>
+                </slot>
+
                 <span
                   v-if="multiSort && isMultiSorting(header.value)"
                   class="multi-sort__number"
@@ -184,7 +189,9 @@
             <tr
               v-if="ifHasExpandSlot && expandingItemIndexList.includes(index + prevPageEndIndex)"
               :class="[{'even-row': (index + 1) % 2 === 0},
-                       typeof bodyExpandRowClassName === 'string' ? bodyExpandRowClassName : bodyExpandRowClassName(item, index + 1)]"
+                       typeof bodyExpandRowClassName === 'string' ? bodyExpandRowClassName
+                       : bodyExpandRowClassName(item, index + 1)
+              ]"
             >
               <td
                 :colspan="headersForRender.length"
@@ -259,10 +266,12 @@
         />
       </div>
       <div class="pagination__items-index">
-        <slot name="paginationItemsIndex"
-        :currentPageFirstIndex="currentPageFirstIndex"
-        :currentPageLastIndex="currentPageLastIndex"
-        :totalItemsLength="totalItemsLength">
+        <slot
+          name="paginationItemsIndex"
+          :current-page-first-index="currentPageFirstIndex"
+          :current-page-last-index="currentPageLastIndex"
+          :total-items-length="totalItemsLength"
+        >
           {{ `${currentPageFirstIndex}–${currentPageLastIndex}` }}
           {{ rowsOfPageSeparatorMessage }} {{ totalItemsLength }}
         </slot>
@@ -329,18 +338,60 @@ import type { HeaderForRender } from '../types/internal';
 
 // eslint-disable-next-line import/extensions
 import { generateColumnContent, getSlotRenderFunctions } from '../utils';
-import propsWithDefault from '../propsWithDefault';
+import { type PropsWithDefault } from '../propsWithDefault';
 
-const props = defineProps({
-  ...propsWithDefault,
-  items: {
-    type: Array as PropType<Item[]>,
-    required: true,
-  },
-  headers: {
-    type: Array as PropType<Header[]>,
-    required: true,
-  },
+const props = withDefaults(defineProps<PropsWithDefault & {
+  items: Item[],
+  headers: Header[]
+}>(), {
+  alternating: false,
+  buttonsPagination: false,
+  checkboxColumnWidth: null,
+  currentPage: 1,
+  emptyMessage: 'No Available Data',
+  expandColumnWidth: 36,
+  filterOptions: null,
+  fixedExpand: false,
+  fixedHeader: true,
+  fixedCheckbox: false,
+  fixedIndex: false,
+  headerTextDirection: 'left',
+  bodyTextDirection: 'left',
+  hideFooter: false,
+  hideRowsPerPage: false,
+  hideHeader: false,
+  indexColumnWidth: 60,
+  itemsSelected: null,
+  loading: false,
+  rowsPerPage: 25,
+  rowsItems: () => [25, 50, 100],
+  rowsPerPageMessage: 'rows per page:',
+  searchField: '',
+  searchValue: '',
+  serverOptions: null,
+  serverItemsLength: 0,
+  showIndex: false,
+  sortBy: '',
+  sortType: 'asc',
+  multiSort: false,
+  tableMinHeight: 180,
+  tableHeight: null,
+  themeColor: '#42b883',
+  tableClassName: '',
+  headerClassName: '',
+  headerItemClassName: '',
+  bodyRowClassName: '',
+  bodyExpandRowClassName: '',
+  bodyItemClassName: '',
+  noHover: false,
+  borderCell: false,
+  mustSort: false,
+  rowsOfPageSeparatorMessage: 'of',
+  clickEventType: 'single',
+  clickRowToExpand: false,
+  tableNodeId: '',
+  showIndexSymbol: '#',
+  preventContextMenuRow: true,
 });
 
 const {

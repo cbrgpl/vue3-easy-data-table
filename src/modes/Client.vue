@@ -1,3 +1,11 @@
+<script lang="ts">
+
+export default {
+  name: 'ClientTable',
+};
+
+</script>
+
 <template>
   <span>search field:</span>
   <!-- <select v-model="searchField">
@@ -5,15 +13,18 @@
     <option>indicator.weight</option>
   </select> -->
 
-  <br/>
+  <br />
   <span>search value: </span>
-  <input type="text" v-model="searchValue">
+  <input
+    v-model="searchValue"
+    type="text"
+  >
   <div>
     <DataTable
-      table-node-id="my-table"
-      v-model:items-selected="itemsSelected"
-      click-row-to-expand
       ref="dataTable"
+      v-model:items-selected="itemsSelected"
+      table-node-id="my-table"
+      click-row-to-expand
       alternating
       border-cell
       no-hover
@@ -33,20 +44,20 @@
       :header-item-class-name="headerItemClassNameFunction"
       :body-item-class-name="bodyItemClassNameFunction"
       :body-expand-row-class-name="bodyExpandRowClassNameFunction"
-      @update-sort="updateSort"
-      @update-filter="updateFilter"
       multi-sort
       body-text-direction="left"
       :filter-options="filterOptions"
       header-text-direction="left"
       click-event-type="double"
+      show-index-symbol="$"
+      @update-sort="updateSort"
+      @update-filter="updateFilter"
       @select-row="showItem"
       @deselect-row="deselectRow"
       @update-page-items="updateItems"
       @update-total-items="updateTotalItems"
-      show-index-symbol="$"
     >
-     <!-- <template #customize-headers>
+      <!-- <template #customize-headers>
         <thead class="my-static-header">
           <tr>
             <th colspan="3" rowspan="2"></th>
@@ -142,16 +153,175 @@
 
 <script lang="ts" setup>
 import {
-  computed, ref, reactive, toRefs, onMounted
+  computed, ref, reactive, toRefs, onMounted,
 } from 'vue';
 // import { useRowsPerPage } from 'use-vue3-easy-data-table';
 // import type { UseRowsPerPageReturn } from 'use-vue3-easy-data-table';
 import type {
-  Header, Item, FilterOption, ClickRowArgument, UpdateSortArgument, HeaderItemClassNameFunction, BodyItemClassNameFunction, BodyRowClassNameFunction,
-  TextDirection,
+  Header, Item, FilterOption, ClickRowArgument,
+  UpdateSortArgument, HeaderItemClassNameFunction, BodyItemClassNameFunction,
+  BodyRowClassNameFunction, TextDirection, SortType,
 } from '../types/main';
 import DataTable from '../components/DataTable.vue';
-import { mockClientNestedItems, mockClientItems, mockDuplicateClientNestedItems, headersMocked } from '../mock';
+import {
+  mockClientNestedItems, mockClientItems, mockDuplicateClientNestedItems, headersMocked,
+} from '../mock';
+
+// Simulate decomposed data
+const countries = [
+  { name: 'USA', id: 0 },
+  { name: 'Greece', id: 1 },
+];
+
+const items = ref<Item[]>([
+  {
+    name: 'Stephen Curry',
+    firstName: 'GSW',
+    number: 30,
+    position: 'G',
+    indicator: { height: '6-2', weight: 185 },
+    lastAttended: 'Davidson',
+    country: countries[0].id,
+  },
+  {
+    name: 'Kevin Durant',
+    firstName: 'BKN',
+    number: 7,
+    position: 'F',
+    indicator: { height: '6-10', weight: 240 },
+    lastAttended: 'Texas-Austin',
+    country: countries[0].id,
+  },
+  {
+    name: 'Lebron James',
+    firstName: 'LAL',
+    number: 7,
+    position: 'F',
+    indicator: { height: '6-9', weight: 185 },
+    lastAttended: 'St. Vincent-St. Mary HS (OH)',
+    country: countries[0].id,
+  },
+  {
+    name: 'Giannis Antetokounmpo',
+    firstName: 'MIL',
+    number: 34,
+    position: 'F',
+    indicator: { height: '6-11', weight: 242 },
+    lastAttended: 'Filathlitikos',
+    country: countries[1].id,
+  },
+  {
+    name: 'HC',
+    firstName: 'MIL',
+    number: 34,
+    position: 'F',
+    indicator: { height: '6-11', weight: 243 },
+    lastAttended: 'Filathlitikos',
+    country: countries[1].id,
+  },
+  {
+    name: 'Stephen Curry',
+    firstName: 'GSW',
+    number: 30,
+    position: 'G',
+    indicator: { height: '6-2', weight: 185 },
+    lastAttended: 'Davidson',
+    country: countries[0].id,
+  },
+  {
+    name: 'Kevin Durant',
+    firstName: 'BKN',
+    number: 7,
+    position: 'F',
+    indicator: { height: '6-10', weight: 240 },
+    lastAttended: 'Texas-Austin',
+    country: countries[0].id,
+  },
+  {
+    name: 'Lebron James',
+    firstName: 'LAL',
+    number: 7,
+    position: 'F',
+    indicator: { height: '6-9', weight: 185 },
+    lastAttended: 'St. Vincent-St. Mary HS (OH)',
+    country: countries[0].id,
+  },
+  {
+    name: 'Giannis Antetokounmpo',
+    firstName: 'MIL',
+    number: 34,
+    position: 'F',
+    indicator: { height: '6-11', weight: 242 },
+    lastAttended: 'Filathlitikos',
+    country: countries[1].id,
+  },
+  {
+    name: 'HC',
+    firstName: 'MIL',
+    number: 34,
+    position: 'F',
+    indicator: { height: '6-11', weight: 243 },
+    lastAttended: 'Filathlitikos',
+    country: countries[1].id,
+  },
+  {
+    name: 'Stephen Curry',
+    firstName: 'GSW',
+    number: 30,
+    position: 'G',
+    indicator: { height: '6-2', weight: 185 },
+    lastAttended: 'Davidson',
+    country: countries[0].id,
+  },
+  {
+    name: 'Kevin Durant',
+    firstName: 'BKN',
+    number: 7,
+    position: 'F',
+    indicator: { height: '6-10', weight: 240 },
+    lastAttended: 'Texas-Austin',
+    country: countries[0].id,
+  },
+  {
+    name: 'Lebron James',
+    firstName: 'LAL',
+    number: 7,
+    position: 'F',
+    indicator: { height: '6-9', weight: 185 },
+    lastAttended: 'St. Vincent-St. Mary HS (OH)',
+    country: countries[0].id,
+  },
+  {
+    name: 'Giannis Antetokounmpo',
+    firstName: 'MIL',
+    number: 34,
+    position: 'F',
+    indicator: { height: '6-11', weight: 242 },
+    lastAttended: 'Filathlitikos',
+    country: countries[1].id,
+  },
+  {
+    name: 'HC',
+    firstName: 'MIL',
+    number: 34,
+    position: 'F',
+    indicator: { height: '6-11', weight: 243 },
+    lastAttended: 'Filathlitikos',
+    country: countries[1].id,
+  },
+]);
+
+// const items = ref<Item[]>(mockClientItems());
+
+// const headers: Header[] = [
+//   { text: 'Name', value: 'name'},
+//   { text: 'Address', value: 'address'},
+//   { text: 'Height', value: 'info.out.height', sortable: true},
+//   { text: 'Weight', value: 'info.out.weight', sortable: true },
+//   { text: 'Age', value: 'age', sortable: true },
+//   { text: 'Favourite sport', value: 'favouriteSport'},
+//   { text: 'Favourite fruits', value: 'favouriteFruits'},
+// ];
 
 const searchField = ref(['name', 'country']);
 const searchValue = ref('');
@@ -165,14 +335,14 @@ const switchToNested = () => {
   items.value = mockClientNestedItems(100);
 };
 const headers: Header[] = [
-  { text: "Name", value: "name" },
-  { text: "TEAM", value: "team"},
-  { text: "NUMBER", value: "number", sortable: true},
-  { text: "POSITION", value: "position"},
-  { text: "HEIGHT", value: "indicator.height"},
-  { text: "WEIGHT (lbs)", value: "indicator.weight", sortable: true},
-  { text: "LAST ATTENDED", value: "lastAttended", width: 200},
-  { text: "COUNTRY", value: "country"},
+  { text: 'Name', value: 'name' },
+  { text: 'TEAM', value: 'team' },
+  { text: 'NUMBER', value: 'number', sortable: true },
+  { text: 'POSITION', value: 'position' },
+  { text: 'HEIGHT', value: 'indicator.height' },
+  { text: 'WEIGHT (lbs)', value: 'indicator.weight', sortable: true },
+  { text: 'LAST ATTENDED', value: 'lastAttended', width: 200 },
+  { text: 'COUNTRY', value: 'country' },
 ];
 
 // const headers: Header[] = headersMocked;
@@ -191,42 +361,6 @@ const updateTotalItems = (items: Item[]) => {
   // console.log('total items');
   // console.log(JSON.stringify(items));
 };
-
-// Simulate decomposed data
-const countries = [
-  { name: 'USA', id: 0 },
-  { name: 'Greece', id: 1 }
-]
-
-const items = ref<Item[]>([
-  { name: "Stephen Curry", firstName: "GSW",  number: 30, position: 'G', indicator: {"height": '6-2', "weight": 185}, lastAttended: "Davidson", country: countries[0]['id']},
-  { name: "Kevin Durant", firstName: "BKN", number: 7, position: 'F', indicator: {"height": '6-10', "weight": 240}, lastAttended: "Texas-Austin", country: countries[0]['id']},
-  { name: "Lebron James", firstName: "LAL", number: 7, position: 'F', indicator: {"height": '6-9', "weight": 185}, lastAttended: "St. Vincent-St. Mary HS (OH)", country: countries[0]['id']},
-  { name: "Giannis Antetokounmpo", firstName: "MIL", number: 34, position: 'F', indicator: {"height": '6-11', "weight": 242}, lastAttended: "Filathlitikos", country: countries[1]['id']},
-  { name: "HC", firstName: "MIL", number: 34, position: 'F', indicator: {"height": '6-11', "weight": 243}, lastAttended: "Filathlitikos", country: countries[1]['id']},
-  { name: "Stephen Curry", firstName: "GSW", number: 30, position: 'G', indicator: {"height": '6-2', "weight": 185}, lastAttended: "Davidson", country: countries[0]['id']},
-  { name: "Kevin Durant", firstName: "BKN", number: 7, position: 'F', indicator: {"height": '6-10', "weight": 240}, lastAttended: "Texas-Austin", country: countries[0]['id']},
-  { name: "Lebron James", firstName: "LAL", number: 7, position: 'F', indicator: {"height": '6-9', "weight": 185}, lastAttended: "St. Vincent-St. Mary HS (OH)", country: countries[0]['id']},
-  { name: "Giannis Antetokounmpo", firstName: "MIL", number: 34, position: 'F', indicator: {"height": '6-11', "weight": 242}, lastAttended: "Filathlitikos", country: countries[1]['id']},
-  { name: "HC", firstName: "MIL", number: 34, position: 'F', indicator: {"height": '6-11', "weight": 243}, lastAttended: "Filathlitikos", country: countries[1]['id']},
-  { name: "Stephen Curry", firstName: "GSW", number: 30, position: 'G', indicator: {"height": '6-2', "weight": 185}, lastAttended: "Davidson", country: countries[0]['id']},
-  { name: "Kevin Durant", firstName: "BKN", number: 7, position: 'F', indicator: {"height": '6-10', "weight": 240}, lastAttended: "Texas-Austin", country: countries[0]['id']},
-  { name: "Lebron James", firstName: "LAL", number: 7, position: 'F', indicator: {"height": '6-9', "weight": 185}, lastAttended: "St. Vincent-St. Mary HS (OH)", country: countries[0]['id']},
-  { name: "Giannis Antetokounmpo", firstName: "MIL", number: 34, position: 'F', indicator: {"height": '6-11', "weight": 242}, lastAttended: "Filathlitikos", country: countries[1]['id']},
-  { name: "HC", firstName: "MIL", number: 34, position: 'F', indicator: {"height": '6-11', "weight": 243}, lastAttended: "Filathlitikos", country: countries[1]['id']},
-]);
-
-// const items = ref<Item[]>(mockClientItems());
-
-// const headers: Header[] = [
-//   { text: 'Name', value: 'name'},
-//   { text: 'Address', value: 'address'},
-//   { text: 'Height', value: 'info.out.height', sortable: true},
-//   { text: 'Weight', value: 'info.out.weight', sortable: true },
-//   { text: 'Age', value: 'age', sortable: true },
-//   { text: 'Favourite sport', value: 'favouriteSport'},
-//   { text: 'Favourite fruits', value: 'favouriteFruits'},
-// ];
 
 const itemsSelected = ref<Item[]>([items.value[1]]);
 
@@ -251,23 +385,21 @@ const favouriteSportCriteria = ref('all');
 
 const showNameFilter = ref(false);
 const nameCriteria = ref('');
-const showCountryFilter = ref(false)
-const countryCriteria = ref('')
+const showCountryFilter = ref(false);
+const countryCriteria = ref('');
 
 const filterOptions = computed((): FilterOption[] => {
   const filterOptionsArray: FilterOption[] = [];
   filterOptionsArray.push({
     field: 'name',
     criteria: nameCriteria.value,
-    comparison: (value, criteria, criteriaRegExp): boolean => (value != null && criteria != null &&
-      typeof value === 'string' && criteriaRegExp.test(value)),
+    comparison: (value, criteria, criteriaRegExp): boolean => (value != null && criteria != null
+      && typeof value === 'string' && criteriaRegExp.test(value)),
   });
   filterOptionsArray.push({
     field: 'country',
     criteria: countryCriteria.value,
-    comparison: (value, criteria, criteriaRegExp ): boolean => {
-      return typeof value === 'string' && criteriaRegExp.test(value)
-    }
+    comparison: (value, criteria, criteriaRegExp): boolean => typeof value === 'string' && criteriaRegExp.test(value),
   });
   return filterOptionsArray;
 });
@@ -302,9 +434,7 @@ const prevPage = () => {
 const updatePage = (paginationNumber: number) => {
   dataTable.value.updatePage(paginationNumber);
 };
-const isDataHeader = (header: Header) => {
-  return !(header.value === 'checkbox' || header.value === 'index' || header.value === 'expand')
-}
+const isDataHeader = (header: Header) => !(header.value === 'checkbox' || header.value === 'index' || header.value === 'expand');
 
 // rows per page
 const rowsPerPageOptions = computed(() => dataTable.value?.rowsPerPageOptions);

@@ -8,7 +8,7 @@ import type {
 
 export default function useHeaders(
   showIndexSymbol: Ref<string>,
-  checkboxColumnWidth: Ref<number>,
+  checkboxColumnWidth: Ref<number|null>,
   expandColumnWidth: Ref<number>,
   fixedCheckbox: Ref<boolean>,
   fixedExpand: Ref<boolean>,
