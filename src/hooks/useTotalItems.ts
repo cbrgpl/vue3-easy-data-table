@@ -68,7 +68,7 @@ export default function useTotalItems(
             if (typeof comparison === 'function') {
               const creteriaRegExp = createRegExpSafelly(criteria as string, 'i');
               const renderedValue = getItemFieldValue(field as string, item);
-              return comparison(renderedValue, criteria, creteriaRegExp);
+              return comparison(getItemValue(field, item), renderedValue, criteria, creteriaRegExp);
             }
 
             switch (comparison) {
