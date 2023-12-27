@@ -1,3 +1,10 @@
+<script lang="ts">
+
+export default {
+  name: 'LoadingComponent',
+};
+</script>
+
 <template>
   <div class="lds-ring">
     <div></div><div></div><div></div><div></div>

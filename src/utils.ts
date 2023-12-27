@@ -6,9 +6,10 @@ import {
 } from 'vue';
 import type { Item } from './types/main';
 
-export const createRegExpSafelly = ( regExpPattern: string, flags?: string ) => new RegExp(
+export const createRegExpSafelly = (regExpPattern: string, flags?: string) => new RegExp(
   regExpPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-  flags)
+  flags,
+);
 
 export function getItemValue(column: string, item: Item) {
   if (column.includes('.')) {
@@ -44,6 +45,7 @@ export function getSlotRenderFunctions(
   slots: ReturnType<typeof useSlots>,
   currentInstance: ReturnType<typeof getCurrentInstance>,
 ) {
+  // eslint-disable-next-line no-spaced-func, func-call-spacing
   const renderFunctionsMap = new Map<string, (item: object) => string>();
 
   const getSlotRenderedContent = (fieldSlot?: Slot) => {
@@ -60,27 +62,23 @@ export function getSlotRenderFunctions(
       let renderedText = '';
       for (let i = 0; i < vnodes.length; i += 1) {
         const vnode = vnodes[i];
-         renderedText += (() => {
+        renderedText += (() => {
           try {
-            if(vnode.type.toString() === Symbol('Text').toString()) {
-              return vnode.children
-            } else {
-              ;(vnode as any).appContext = currentInstance.appContext;
-              render(vnode, $tmpDiv);
-
-              return $tmpDiv.innerText
+            if (vnode.type.toString() === Symbol('Text').toString()) {
+              return vnode.children;
             }
-          } catch(err) {
-            return ''
-          } 
-        })()
+            (vnode as any).appContext = currentInstance.appContext;
+            render(vnode, $tmpDiv);
 
+            return $tmpDiv.innerText;
+          } catch (err) {
+            return '';
+          }
+        })();
       }
       return renderedText;
     };
   };
-
-
 
   const slotsNames = Object.keys(slots);
   for (let i = 0; i < slotsNames.length; i += 1) {

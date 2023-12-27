@@ -1,5 +1,5 @@
 import {
-  Ref, computed, ComputedRef, watch, ref
+  Ref, computed, ComputedRef, watch, ref,
 } from 'vue';
 import type { Item, FilterOption } from '../types/main';
 import type { ClientSortOptions, EmitsEventName } from '../types/internal';
@@ -7,11 +7,11 @@ import { getItemValue, createRegExpSafelly } from '../utils';
 
 export default function useTotalItems(
   clientSortOptions: Ref<ClientSortOptions | null>,
-  filterOptions: Ref<FilterOption[]>,
+  filterOptions: Ref<FilterOption[] | null>,
   isServerSideMode: ComputedRef<boolean>,
   items: Ref<Item[]>,
-  itemsSelected: Ref<Item[]>,
-  searchField: Ref<string>,
+  itemsSelected: Ref<Item[]|null>,
+  searchField: Ref<string|string[]>,
   searchValue: Ref<string>,
   serverItemsLength: Ref<number>,
   multiSort: Ref<boolean>,
@@ -25,53 +25,52 @@ export default function useTotalItems(
     if (typeof searchField.value === 'string' && searchField.value !== '') return getItemFieldValue(searchField.value, item);
     if (Array.isArray(searchField.value)) {
       let searchString = '';
-      searchField.value.forEach((field) => searchString += getItemFieldValue(field, item));
+      searchField.value.forEach((field) => { searchString += getItemFieldValue(field, item); });
       return searchString;
-    } 
+    }
 
     return Object.entries(item)
       .map(([field, value]) => slotsRenders.get(`item-${field}`)?.(item) ?? value)
       .join(' ');
   };
 
-
   // items searching
-  const ItemsChangingToggler = ref(0)
-  const itemsSearching = ref<Item[]>([])
+  const ItemsChangingToggler = ref(0);
+  const itemsSearching = ref<Item[]>([]);
   watch(
     () => [searchValue.value, items.value] as [ string, Item[] ],
-    ( [ searchValue ] ) => {
+    ([newSearchValue]) => {
       // searching feature is not available in server-side mode
-      if (!isServerSideMode.value && searchValue !== '') {
-        const regex = createRegExpSafelly(searchValue, 'i');
+      if (!isServerSideMode.value && newSearchValue !== '') {
+        const regex = createRegExpSafelly(newSearchValue, 'i');
         itemsSearching.value = items.value.filter((item) => regex.test(generateSearchingTarget(item)));
-        return
+        return;
       }
 
-      ItemsChangingToggler.value++
+      ItemsChangingToggler.value += 1;
       itemsSearching.value = items.value;
     },
-    { immediate: true, deep: true}
-  )
+    { immediate: true, deep: true },
+  );
 
   // items filtering
-  const itemsFiltering = ref<Item[]>([])
+  const itemsFiltering = ref<Item[]>([]);
   watch(
     () => [itemsSearching.value, filterOptions.value, ItemsChangingToggler.value] as [Item[], FilterOption[], number],
-    ( [itemsSearching, filterOptions] ) => {
-      let itemsFiltered = [...itemsSearching];
-      if (filterOptions) {
-        filterOptions.forEach((option: FilterOption) => {
+    ([newItemsSearching, newFilterOptions]) => {
+      let itemsFiltered = [...newItemsSearching];
+      if (newFilterOptions) {
+        newFilterOptions.forEach((option: FilterOption) => {
           itemsFiltered = itemsFiltered.filter((item) => {
             const { field, comparison, criteria } = option;
-            const propValue = getItemValue(field as string, item)
-            
+            const propValue = getItemValue(field as string, item);
+
             if (typeof comparison === 'function') {
-              const creteriaRegExp = createRegExpSafelly(criteria as string, 'i')
+              const creteriaRegExp = createRegExpSafelly(criteria as string, 'i');
               const renderedValue = getItemFieldValue(field as string, item);
-              return comparison(renderedValue, criteria, creteriaRegExp);
+              return comparison(getItemValue(field, item), renderedValue, criteria, creteriaRegExp);
             }
-  
+
             switch (comparison) {
               case '=':
                 return propValue === criteria;
@@ -88,19 +87,19 @@ export default function useTotalItems(
               case 'between':
                 return propValue >= Math.min(...criteria) && +propValue <= Math.max(...criteria);
               case 'in':
-                return (criteria as any).includes( propValue );
+                return (criteria as any).includes(propValue);
               default:
                 return propValue === criteria;
             }
           });
         });
         itemsFiltering.value = itemsFiltered;
-        return
+        return;
       }
-       itemsFiltering.value = itemsSearching;
+      itemsFiltering.value = newItemsSearching;
     },
-    { immediate: true }
-  )
+    { immediate: true },
+  );
 
   watch(itemsFiltering, (newVal) => {
     if (filterOptions.value) {
@@ -133,12 +132,13 @@ export default function useTotalItems(
   // flow: searching => filtering => sorting
   // (last step: sorting)
   const totalItems = computed((): Item[] => {
-    ItemsChangingToggler.value
-   
+    // eslint-disable-next-line no-unused-expressions
+    ItemsChangingToggler.value;
+
     if (isServerSideMode.value) return items.value;
     if (clientSortOptions.value === null) {
-      return itemsFiltering.value
-    };
+      return itemsFiltering.value;
+    }
     const { sortBy, sortDesc } = clientSortOptions.value;
     const itemsFilteringSorted = [...itemsFiltering.value];
     // multi sort

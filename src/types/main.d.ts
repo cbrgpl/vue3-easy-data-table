@@ -22,7 +22,7 @@ export type FilterOption = {
   criteria: number[] | string[]
 }| {
   field: string
-  comparison: (value: any, criteria: string, criteriaRegExp: RegExp ) => boolean
+  comparison: (value: any, renderValue: any, criteria: string, criteriaRegExp: RegExp) => boolean
   criteria: string
 }
 
